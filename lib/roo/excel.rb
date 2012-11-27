@@ -43,6 +43,10 @@ class Roo::Excel < Roo::Base
     @formula = Hash.new
     @fonts = Hash.new
   end
+  
+  def workbook
+    @workbook
+  end
 
   def encoding=(codepage)
     @workbook.encoding = codepage
