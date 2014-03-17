@@ -282,6 +282,7 @@ class Roo::Excel < Roo::Base
     cell = row.at(idx)
     cell = row[idx] if row[idx].class == Spreadsheet::Link
     cell = cell.value if cell.class == Spreadsheet::Formula
+    cell = apply_format(cell, row.format(idx))
     cell
   end
 
@@ -334,6 +335,21 @@ class Roo::Excel < Roo::Base
     end
     return value_type, value
   end
+
+  # Test of cell format has leading zeros (only)
+  def leading_zeros?(format)
+    return format.number_format.gsub(/0{1,}/, '0') == '0'
+  end
+  private :leading_zeros?
+
+  # Applies Known Formatting to cell
+  def apply_format(cell, format)
+    if leading_zeros?(format)
+      cell = "%0#{format.number_format.length}d" % cell.to_i.to_s
+    end
+    cell
+  end
+  private :apply_format
 
   # Read the cell and based on the class,
   # return the values for Roo

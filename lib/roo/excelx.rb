@@ -208,6 +208,7 @@ class Roo::Excelx < Roo::Base
   # * :formula
   # * :time
   # * :datetime
+  # * :leading_zeros
   def celltype(row,col,sheet=nil)
     sheet ||= @default_sheet
     read_cells(sheet)
@@ -385,6 +386,17 @@ class Roo::Excelx < Roo::Base
     @s_attribute[sheet][key] = s_attribute
   end
 
+  def format2type(format)
+    format = format.to_s # weil von Typ Nokogiri::XML::Attr
+    if FORMATS.has_key? format
+      FORMATS[format]
+    elsif format.to_s.gsub(/0{1,}/, '0') == '0'
+      :leading_zeros
+    else
+      :float
+    end
+  end
+
   # read all cells in the selected sheet
   def read_cells(sheet=nil)
     sheet ||= @default_sheet
@@ -412,7 +424,7 @@ class Roo::Excelx < Roo::Base
           # 2011-09-15 END
         else
           format = attribute2format(s_attribute)
-          Format.to_type(format)
+          format2type(format)
         end
       formula = nil
       c.children.each do |cell|
@@ -461,6 +473,9 @@ class Roo::Excelx < Roo::Base
             when :string
               excelx_type = :string
               cell.content
+            when :leading_zeros
+              excelx_type = :leading_zeros
+              cell.content = ("%0#{format.length}d" % cell.content)
             else
               value_type = :float
               cell.content
